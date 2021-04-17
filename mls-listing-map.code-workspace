@@ -1,0 +1,56 @@
+{
+  "folders": [
+    {
+      "path": ".",
+      "name": "mls-listing-map"
+    }
+  ],
+  "settings": {
+    "debug.toolBarLocation": "docked",
+    "files.exclude": {
+      "**/.git": true,
+      "**/.svn": true,
+      "**/.hg": true,
+      "**/CVS": true,
+      "**/.DS_Store": true,
+      "node_modules/": true,
+      "public/": true,
+      "build/": true,
+      ".vscode/": true
+    },
+    "editor.formatOnSave": true,
+    "terminal.integrated.splitCwd": "workspaceRoot"
+  },
+  "extensions": {
+    "recommendations": [
+      "coenraads.bracket-pair-colorizer",
+      "msjsdiag.debugger-for-chrome",
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "ms-azuretools.vscode-docker",
+      "eamodio.gitlens",
+      "syler.sass-indented"
+    ]
+  },
+  "launch": {
+    "configurations": [
+      {
+        "type": "pwa-chrome",
+        "request": "launch",
+        "name": "Launch Chrome",
+        "url": "https://localhost:3000",
+        "webRoot": "${workspaceRoot:mls-listing-map}",
+        "sourceMaps": true,
+        "runtimeArgs": ["--remote-debugging-port=9222"]
+      },
+      {
+        "type": "firefox",
+        "request": "launch",
+        "name": "Launch Firefox",
+        "url": "http://localhost:3000",
+        "webRoot": "${workspaceRoot}",
+        "reAttach": true
+      }
+    ]
+  }
+}
