@@ -14,6 +14,11 @@ interface ErrorHandlerState {
 // errors thrown in lower components, log them, and display them to the
 // user via a popup dialog
 export class ErrorHandler extends React.Component<ErrorHandlerProps, ErrorHandlerState> {
+    constructor(props: ErrorHandlerProps, state: ErrorHandlerState) {
+        super(props, state);
+        this.state = {};
+    }
+
     componentDidCatch(error: Error) {
         this.setState({ errors: [...(this.state.errors || []), error] });
     }
@@ -27,7 +32,7 @@ export class ErrorHandler extends React.Component<ErrorHandlerProps, ErrorHandle
             <>
                 <Popup
                     title="Error"
-                    isOpen={this.state.errors !== undefined && this.state.errors.length > 0}
+                    isOpen={this.state !== null && this.state.errors !== undefined && this.state.errors.length > 0}
                     confirmButtonLabel="Ok"
                     hideCancelButton
                     onConfirm={this.resetErrors}

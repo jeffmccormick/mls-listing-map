@@ -38,7 +38,7 @@
         "type": "pwa-chrome",
         "request": "launch",
         "name": "Launch Chrome",
-        "url": "https://localhost:3000",
+        "url": "http://localhost:3000/mls-listing-map",
         "webRoot": "${workspaceRoot:mls-listing-map}",
         "sourceMaps": true,
         "runtimeArgs": ["--remote-debugging-port=9222"]
@@ -47,7 +47,7 @@
         "type": "firefox",
         "request": "launch",
         "name": "Launch Firefox",
-        "url": "http://localhost:3000",
+        "url": "http://localhost:3000/mls-listing-map",
         "webRoot": "${workspaceRoot}",
         "reAttach": true
       }
