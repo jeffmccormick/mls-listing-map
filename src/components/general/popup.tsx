@@ -36,16 +36,16 @@ export const Popup: FC<PopupProps> = ({
     const classes = useStyles();
 
     return (
-        <Dialog open={isOpen} maxWidth="lg" onExited={onExited}>
+        <Dialog open={isOpen} maxWidth={false} onExited={onExited}>
             <DialogTitle>{title}</DialogTitle>
             <DialogContent>{children}</DialogContent>
             <DialogActions className={classes.buttonsContainer}>
                 {!hideCancelButton && (
-                    <Button onClick={onCancel} variant="outlined" color="primary">
+                    <Button onClick={onCancel} variant="outlined">
                         Cancel
                     </Button>
                 )}
-                <Button onClick={onConfirm} variant="contained" color="primary" disabled={disableConfirmButton}>
+                <Button onClick={onConfirm} variant="contained" disabled={disableConfirmButton}>
                     {confirmButtonLabel}
                 </Button>
             </DialogActions>

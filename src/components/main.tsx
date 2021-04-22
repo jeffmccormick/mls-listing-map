@@ -4,12 +4,14 @@ import { ErrorContext } from '../context/errorContext';
 import { ListingContext } from '../context/listingContext';
 import { Listing } from '../schemas/listing';
 import { ListingTable } from './listingTable';
-import { SourceInputPopup } from './sourceInput';
+import { SourceInputPopup } from './sourceInputPopup';
+import { ListingPopup } from './listingPopup';
 import { Map } from './map';
+import { ListingCoordinates } from '../schemas/listingCoordinates';
 
 const useStyles = makeStyles({
     mainContainer: {
-        margin: '5rem',
+        margin: '0 5rem',
         width: 'auto',
     },
     buttonContainer: {
@@ -18,7 +20,11 @@ const useStyles = makeStyles({
 });
 
 export const Main: FC = () => {
+    const [isImporting, setIsImporting] = React.useState<boolean>(false);
+    const [isListingVisible, setIsListingVisible] = React.useState<boolean>(false);
+    const [selectedListingId, setSelectedListingId] = React.useState<number | null>(null);
     const [listings, setListings] = React.useState<Listing[] | null>(null);
+    const [coordinates, setCoordinates] = React.useState<ListingCoordinates[] | null>(null);
     const [errors, setErrors] = React.useState<string[] | null>(null);
     const [isSourceInputOpen, setIsSourceInputOpen] = React.useState<boolean>(true);
 
@@ -31,7 +37,7 @@ export const Main: FC = () => {
     const classes = useStyles();
 
     return (
-        <ListingContext.Provider value={{ listings, setListings }}>
+        <ListingContext.Provider value={{ isImporting, selectedListingId, listings, coordinates }}>
             <ErrorContext.Provider value={{ errors, addError, clearAll: clearErrors }}>
                 <Grid container direction="column" className={classes.mainContainer}>
                     <Grid
@@ -46,9 +52,16 @@ export const Main: FC = () => {
                             Import
                         </Button>
                     </Grid>
-                    <SourceInputPopup isOpen={isSourceInputOpen} close={() => setIsSourceInputOpen(false)} />
-                    <Map />
-                    <ListingTable />
+                    <SourceInputPopup
+                        isOpen={isSourceInputOpen}
+                        setIsImporting={setIsImporting}
+                        setListings={setListings}
+                        setCoordinates={setCoordinates}
+                        close={() => setIsSourceInputOpen(false)}
+                    />
+                    <Map setSelectedListingId={setSelectedListingId} showListing={() => setIsListingVisible(true)} />
+                    <ListingTable setSelectedListingId={setSelectedListingId} />
+                    <ListingPopup isOpen={isListingVisible} close={() => setIsListingVisible(false)} />
                 </Grid>
             </ErrorContext.Provider>
         </ListingContext.Provider>

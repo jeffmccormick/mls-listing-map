@@ -1,7 +1,7 @@
 export interface NominatimResult {
     place_id: number;
-    lat: number;
-    lon: number;
+    lat: string;
+    lon: string;
     address: NominatimAddress;
 }
 

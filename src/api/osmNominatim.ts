@@ -1,12 +1,35 @@
-import { Address } from '../schemas/address';
 import { DataResult } from '../schemas/result';
 import querystring from 'querystring';
 import { NominatimResult } from '../schemas/nominatimResult';
+import { ListingCoordinates } from '../schemas/listingCoordinates';
+import { DelayQueue } from '../utility/delayQueue';
 
-export const lookupGeocodeAddress = async (addressQuery: string): Promise<DataResult<Address>> => {
+const geocodeQueue = new DelayQueue(1500);
+
+export const lookupGeocodeAddress = async (
+    listingId: number,
+    addressQuery: string
+): Promise<DataResult<ListingCoordinates>> => {
     try {
+        let cacheEntry = localStorage.getItem(listingId.toString());
+        if (!cacheEntry) {
+            cacheEntry = localStorage.getItem(addressQuery.toLocaleUpperCase());
+        }
+        if (cacheEntry) {
+            const coordinates = JSON.parse(cacheEntry);
+            if (coordinates.id !== listingId) {
+                coordinates.id = listingId;
+                const randomOffset = Math.random() * 2 * Math.PI;
+                coordinates.latitude = coordinates.latitude + Math.sin(randomOffset) * 0.00005;
+                coordinates.longitude = coordinates.longitude + Math.cos(randomOffset) * 0.00005;
+            }
+            return { success: true, data: coordinates };
+        }
+
+        await geocodeQueue.waitNext();
+
         const query = {
-            q: sanitizeAddress(addressQuery),
+            q: addressQuery,
             format: 'jsonv2',
             limit: 1,
             addressdetails: 1,
@@ -25,29 +48,18 @@ export const lookupGeocodeAddress = async (addressQuery: string): Promise<DataRe
             return { success: false, error: `Nominatim returned invalid result: ${data}` };
         }
 
-        const address = {
-            street: `${data[0].address.house_number} ${data[0].address.road}`,
-            city: data[0].address.town,
-            state: data[0].address.state,
-        } as Address;
+        const coordinate = {
+            id: listingId,
+            latitude: parseFloat(data[0].lat),
+            longitude: parseFloat(data[0].lon),
+        } as ListingCoordinates;
+        const coordinateJson = JSON.stringify(coordinate);
 
-        return {
-            success: true,
-            data: address,
-        };
+        localStorage.setItem(listingId.toString(), coordinateJson);
+        localStorage.setItem(addressQuery.toLocaleUpperCase(), coordinateJson);
+
+        return { success: true, data: coordinate };
     } catch (err) {
         return { success: false, error: err.toString() };
     }
-};
-
-const sanitizeAddress = (address: string): string => {
-    // Addresses come to us in the format of '[number or range] [street] [U: unit#] [city], [state][optional :neighborhood]]'
-
-    // First remove the worthless unit number
-    address = address.replace(/(?:U: [\w]+ )/, '');
-
-    // Remove the neighborhood listing that might be on the end
-    address = address.replace(/(?:MA:.*)/, 'MA');
-
-    return address;
 };
