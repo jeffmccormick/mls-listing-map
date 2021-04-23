@@ -22,7 +22,7 @@
   },
   "scripts": {
     "predeploy": "yarn build",
-    "deploy": "gh-pages -d build",
+    "deploy": "gh-pages -d build -b pages",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
