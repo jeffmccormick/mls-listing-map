@@ -2,12 +2,17 @@ import React, { FC } from 'react';
 import { ListingContext } from '../context/listingContext';
 import { Button, Grid, makeStyles, Typography } from '@material-ui/core';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
+import { Map as LeafletMap, Icon } from 'leaflet';
 import { openListing } from '../api/mlspin';
+import { currencyFormatter } from '../utility/currencyFormatter';
+import BlueIcon from '../styles/images/marker-icon-blue.png';
+import PurpleIcon from '../styles/images/marker-icon-violet.png';
+import MarkerShadow from '../styles/images/marker-shadow.png';
 // import { ErrorContext } from '../context/errorContext';
 
-interface MapProps {
+interface ListingMapProps {
     setSelectedListingId: (listingId: number | null) => void;
-    showListing: () => void;
+    markListingAsViewed: (listingId: number) => void;
 }
 
 const useStyles = makeStyles({
@@ -21,22 +26,56 @@ const useStyles = makeStyles({
     },
 });
 
-export const Map: FC<MapProps> = ({ setSelectedListingId, showListing }: MapProps) => {
+const blueMarkerIcon = new Icon({
+    iconUrl: BlueIcon,
+    shadowUrl: MarkerShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+});
+
+const purpleMarkerIcon = new Icon({
+    iconUrl: PurpleIcon,
+    shadowUrl: MarkerShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+});
+
+export const ListingMap: FC<ListingMapProps> = ({ setSelectedListingId, markListingAsViewed }: ListingMapProps) => {
     const listingContext = React.useContext(ListingContext);
     // const errorContext = React.useContext(ErrorContext);
 
     const classes = useStyles();
 
+    const mapRef = React.useRef<LeafletMap>();
+
+    // React.useEffect(() => {
+    //     if (mapRef.current) {
+    //         mapRef.current.eachLayer((layer) => {
+    //             console.log(layer);
+    //         });
+    //     }
+    // }, [listingContext.selectedListingId, mapRef.current]);
+
     return (
         <Grid item>
-            <MapContainer center={[42.41, -71.15]} zoom={11.6} scrollWheelZoom className={classes.map}>
+            <MapContainer
+                center={[42.41, -71.15]}
+                zoom={11.6}
+                scrollWheelZoom
+                className={classes.map}
+                whenCreated={(map) => (mapRef.current = map)}
+            >
                 <TileLayer
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 {listingContext.coordinates?.reduce((markers, coordinates) => {
                     const listing = listingContext.listings?.find((l) => l.id === coordinates.id);
-                    if (!listing) {
+                    if (!listing || listingContext.hiddenListingIds?.has(listing.id)) {
                         return markers;
                     }
 
@@ -47,6 +86,7 @@ export const Map: FC<MapProps> = ({ setSelectedListingId, showListing }: MapProp
                             eventHandlers={{
                                 click: (_) => setSelectedListingId(coordinates.id),
                             }}
+                            icon={listingContext.viewedListingIds.has(listing.id) ? purpleMarkerIcon : blueMarkerIcon}
                         >
                             <Popup>
                                 <Grid container direction="column" alignItems="center">
@@ -63,10 +103,16 @@ export const Map: FC<MapProps> = ({ setSelectedListingId, showListing }: MapProp
                                             {listing.type}
                                         </Typography>
                                     </Grid>
+                                    <Grid item>
+                                        <Typography component="b">{currencyFormatter.format(listing.price)}</Typography>
+                                    </Grid>
                                     <Button
                                         variant="contained"
                                         color="primary"
-                                        onClick={() => openListing(coordinates.id)}
+                                        onClick={() => {
+                                            openListing(listing.id);
+                                            markListingAsViewed(listing.id);
+                                        }}
                                     >
                                         Open Listing
                                     </Button>

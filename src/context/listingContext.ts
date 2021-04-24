@@ -7,6 +7,8 @@ interface ListingContextType {
     selectedListingId: number | null;
     listings: Listing[] | null;
     coordinates: ListingCoordinates[] | null;
+    hiddenListingIds: Set<number> | null;
+    viewedListingIds: Set<number>;
 }
 
 export const ListingContext = React.createContext<ListingContextType>({
@@ -14,4 +16,6 @@ export const ListingContext = React.createContext<ListingContextType>({
     selectedListingId: null,
     listings: null,
     coordinates: null,
+    hiddenListingIds: null,
+    viewedListingIds: new Set<number>(),
 });

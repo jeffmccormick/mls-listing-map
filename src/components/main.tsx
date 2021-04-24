@@ -5,8 +5,7 @@ import { ListingContext } from '../context/listingContext';
 import { Listing } from '../schemas/listing';
 import { ListingTable } from './listingTable';
 import { SourceInputPopup } from './sourceInputPopup';
-import { ListingPopup } from './listingPopup';
-import { Map } from './map';
+import { ListingMap } from './listingMap';
 import { ListingCoordinates } from '../schemas/listingCoordinates';
 
 const useStyles = makeStyles({
@@ -21,10 +20,11 @@ const useStyles = makeStyles({
 
 export const Main: FC = () => {
     const [isImporting, setIsImporting] = React.useState<boolean>(false);
-    const [isListingVisible, setIsListingVisible] = React.useState<boolean>(false);
     const [selectedListingId, setSelectedListingId] = React.useState<number | null>(null);
     const [listings, setListings] = React.useState<Listing[] | null>(null);
     const [coordinates, setCoordinates] = React.useState<ListingCoordinates[] | null>(null);
+    const [hiddenListingIds, setHiddenListingIds] = React.useState<Set<number> | null>(null);
+    const [viewedListingIds, setViewedListingIds] = React.useState(new Set<number>());
     const [errors, setErrors] = React.useState<string[] | null>(null);
     const [isSourceInputOpen, setIsSourceInputOpen] = React.useState<boolean>(true);
 
@@ -37,7 +37,16 @@ export const Main: FC = () => {
     const classes = useStyles();
 
     return (
-        <ListingContext.Provider value={{ isImporting, selectedListingId, listings, coordinates }}>
+        <ListingContext.Provider
+            value={{
+                isImporting,
+                selectedListingId,
+                listings,
+                coordinates,
+                hiddenListingIds,
+                viewedListingIds,
+            }}
+        >
             <ErrorContext.Provider value={{ errors, addError, clearAll: clearErrors }}>
                 <Grid container direction="column" className={classes.mainContainer}>
                     <Grid
@@ -59,9 +68,18 @@ export const Main: FC = () => {
                         setCoordinates={setCoordinates}
                         close={() => setIsSourceInputOpen(false)}
                     />
-                    <Map setSelectedListingId={setSelectedListingId} showListing={() => setIsListingVisible(true)} />
-                    <ListingTable setSelectedListingId={setSelectedListingId} />
-                    <ListingPopup isOpen={isListingVisible} close={() => setIsListingVisible(false)} />
+                    <ListingMap
+                        setSelectedListingId={setSelectedListingId}
+                        markListingAsViewed={(listingId) => {
+                            const newSet = new Set(viewedListingIds);
+                            newSet.add(listingId);
+                            setViewedListingIds(newSet);
+                        }}
+                    />
+                    <ListingTable
+                        setSelectedListingId={setSelectedListingId}
+                        setHiddenListingIds={setHiddenListingIds}
+                    />
                 </Grid>
             </ErrorContext.Provider>
         </ListingContext.Provider>

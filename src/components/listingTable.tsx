@@ -1,18 +1,13 @@
 import React, { FC } from 'react';
 import { ListingContext } from '../context/listingContext';
 import { DataGrid, GridColDef } from '@material-ui/data-grid';
+import { currencyFormatter } from '../utility/currencyFormatter';
 // import { ErrorContext } from '../context/errorContext';
 
 interface ListingTableProps {
     setSelectedListingId: (listingId: number | null) => void;
+    setHiddenListingIds: (listingIds: Set<number> | null) => void;
 }
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-});
 
 const columns: GridColDef[] = [
     {
@@ -42,7 +37,10 @@ const columns: GridColDef[] = [
     { field: 'bathCount', headerName: 'Baths', type: 'number', flex: 0.5 },
 ];
 
-export const ListingTable: FC<ListingTableProps> = ({ setSelectedListingId }: ListingTableProps) => {
+export const ListingTable: FC<ListingTableProps> = ({
+    setSelectedListingId,
+    setHiddenListingIds,
+}: ListingTableProps) => {
     const listingContext = React.useContext(ListingContext);
     // const errorContext = React.useContext(ErrorContext);
 
@@ -60,6 +58,16 @@ export const ListingTable: FC<ListingTableProps> = ({ setSelectedListingId }: Li
             pageSize={10}
             rowsPerPageOptions={[10, 25, 100]}
             onRowSelected={(row) => setSelectedListingId(row.data.id)}
+            onFilterModelChange={(model) => {
+                const hiddenListingIds = new Set<number>();
+                listingContext.listings?.forEach((l) => {
+                    if (!model.visibleRows.has(l.id)) {
+                        hiddenListingIds.add(l.id);
+                    }
+                });
+
+                setHiddenListingIds(hiddenListingIds);
+            }}
             selectionModel={[listingContext.selectedListingId ?? NaN]}
         />
     );
