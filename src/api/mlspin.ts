@@ -26,6 +26,13 @@ export const scrapeSourceForListings = async (listingPage: string): Promise<Data
             const bedBaths = parseBedAndBathCounts(listing.children.item(11)?.textContent ?? '');
             const addressFull = listing.children?.item(9)?.textContent ?? '';
             const parsedAddress = parseAddress(addressFull);
+            const now = new Date();
+            let rawDate = listing.children?.item(15)?.textContent;
+            // The listing does not include the year, so if it got pulled we need to manually add the year string
+            rawDate = rawDate?.length ? rawDate + now.getFullYear().toString() : now.toDateString();
+            const rawTime = listing.children?.item(16)?.textContent ?? now.toTimeString();
+            // This string probably has lots of nbsps, and we need to replace them with normal spaces
+            const parsedTime = new Date(Date.parse((rawDate + rawTime).replace(/\s/g, ' ')) || 0);
 
             listings.push({
                 id: listingId,
@@ -34,6 +41,8 @@ export const scrapeSourceForListings = async (listingPage: string): Promise<Data
                 price: parsePrice(listing.children.item(13)?.textContent ?? '0'),
                 bedCount: bedBaths.bedCount,
                 bathCount: bedBaths.bathCount,
+                receivedTime: parsedTime,
+                isViewed: false,
             } as Listing);
         });
 

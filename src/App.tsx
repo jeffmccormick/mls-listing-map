@@ -2,6 +2,7 @@ import { CssBaseline, ThemeProvider } from '@material-ui/core';
 import React, { FC } from 'react';
 import { ErrorHandler } from './components/general/errorHandler';
 import { Main } from './components/main';
+import { ListingProvider } from './store/listingStore';
 import { DefaultTheme } from './styles/theme';
 
 export const App: FC = () => {
@@ -11,7 +12,9 @@ export const App: FC = () => {
             {/* MUI helper to standardize the CSS for the application */}
             <CssBaseline />
             <ErrorHandler>
-                <Main />
+                <ListingProvider>
+                    <Main />
+                </ListingProvider>
             </ErrorHandler>
         </ThemeProvider>
     );

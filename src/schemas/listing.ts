@@ -8,4 +8,5 @@ export interface Listing {
     bathCount: number;
     price: number;
     receivedTime: Date;
+    isViewed: boolean;
 }

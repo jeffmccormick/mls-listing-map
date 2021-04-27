@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { ListingContext } from '../context/listingContext';
+import { ListingContext } from '../store/listingStore';
 import { Button, Grid, makeStyles, Typography } from '@material-ui/core';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import { Map as LeafletMap, Icon } from 'leaflet';
@@ -8,12 +8,9 @@ import { currencyFormatter } from '../utility/currencyFormatter';
 import BlueIcon from '../styles/images/marker-icon-blue.png';
 import PurpleIcon from '../styles/images/marker-icon-violet.png';
 import MarkerShadow from '../styles/images/marker-shadow.png';
+import { useListingAction } from '../store/listingHooks';
+import { ListingActionType } from '../store/listingActions';
 // import { ErrorContext } from '../context/errorContext';
-
-interface ListingMapProps {
-    setSelectedListingId: (listingId: number | null) => void;
-    markListingAsViewed: (listingId: number) => void;
-}
 
 const useStyles = makeStyles({
     map: {
@@ -44,31 +41,17 @@ const purpleMarkerIcon = new Icon({
     shadowSize: [41, 41],
 });
 
-export const ListingMap: FC<ListingMapProps> = ({ setSelectedListingId, markListingAsViewed }: ListingMapProps) => {
+export const ListingMap: FC = () => {
     const listingContext = React.useContext(ListingContext);
     // const errorContext = React.useContext(ErrorContext);
+    const setSelectedListingId = useListingAction(ListingActionType.SelectListing);
+    const markListingAsViewed = useListingAction(ListingActionType.SetListingAsViewed);
 
     const classes = useStyles();
 
-    const mapRef = React.useRef<LeafletMap>();
-
-    // React.useEffect(() => {
-    //     if (mapRef.current) {
-    //         mapRef.current.eachLayer((layer) => {
-    //             console.log(layer);
-    //         });
-    //     }
-    // }, [listingContext.selectedListingId, mapRef.current]);
-
     return (
         <Grid item>
-            <MapContainer
-                center={[42.41, -71.15]}
-                zoom={11.6}
-                scrollWheelZoom
-                className={classes.map}
-                whenCreated={(map) => (mapRef.current = map)}
-            >
+            <MapContainer center={[42.41, -71.15]} zoom={11.6} scrollWheelZoom className={classes.map}>
                 <TileLayer
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -86,7 +69,7 @@ export const ListingMap: FC<ListingMapProps> = ({ setSelectedListingId, markList
                             eventHandlers={{
                                 click: (_) => setSelectedListingId(coordinates.id),
                             }}
-                            icon={listingContext.viewedListingIds.has(listing.id) ? purpleMarkerIcon : blueMarkerIcon}
+                            icon={listing.isViewed ? purpleMarkerIcon : blueMarkerIcon}
                         >
                             <Popup>
                                 <Grid container direction="column" alignItems="center">
@@ -105,6 +88,15 @@ export const ListingMap: FC<ListingMapProps> = ({ setSelectedListingId, markList
                                     </Grid>
                                     <Grid item>
                                         <Typography component="b">{currencyFormatter.format(listing.price)}</Typography>
+                                    </Grid>
+                                    <Grid item>
+                                        <Typography component="b">
+                                            Listed on&nbsp;
+                                            {listing.receivedTime.toLocaleDateString('en-US', {
+                                                month: 'long',
+                                                day: 'numeric',
+                                            })}
+                                        </Typography>
                                     </Grid>
                                     <Button
                                         variant="contained"

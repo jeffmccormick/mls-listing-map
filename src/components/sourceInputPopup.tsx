@@ -1,18 +1,14 @@
 import React, { FC } from 'react';
 import { Popup } from './general/popup';
 import { scrapeSourceForListings } from '../api/mlspin';
-import { ErrorContext } from '../context/errorContext';
-import { ListingContext } from '../context/listingContext';
-import { Listing } from '../schemas/listing';
-import { ListingCoordinates } from '../schemas/listingCoordinates';
+import { ErrorContext } from '../store/errorContext';
 import { lookupGeocodeAddress } from '../api/osmNominatim';
 import { makeStyles, TextField } from '@material-ui/core';
+import { ListingActionType } from '../store/listingActions';
+import { useListingAction } from '../store/listingHooks';
 
 interface SourceInputPopupProps {
     isOpen: boolean;
-    setIsImporting: (isImporting: boolean) => void;
-    setListings: (listings: Listing[] | null) => void;
-    setCoordinates: (coordinates: ListingCoordinates[] | null) => void;
     close: () => void;
 }
 
@@ -22,16 +18,12 @@ export const useStyles = makeStyles(() => ({
     },
 }));
 
-export const SourceInputPopup: FC<SourceInputPopupProps> = ({
-    isOpen,
-    setIsImporting,
-    setListings,
-    setCoordinates,
-    close,
-}: SourceInputPopupProps) => {
+export const SourceInputPopup: FC<SourceInputPopupProps> = ({ isOpen, close }: SourceInputPopupProps) => {
     const [sourceString, setSourceString] = React.useState<string | undefined>();
     const errorContext = React.useContext(ErrorContext);
-    const listingContext = React.useContext(ListingContext);
+    const setIsImporting = useListingAction(ListingActionType.SetIsImporting);
+    const addListings = useListingAction(ListingActionType.AddListings);
+    const addCoordinate = useListingAction(ListingActionType.AddCoordinate);
 
     const classes = useStyles();
 
@@ -49,23 +41,10 @@ export const SourceInputPopup: FC<SourceInputPopupProps> = ({
             return;
         }
 
-        let newListings = parseResult.data;
-        // The listings often have duplicates, so filter out those
-        const ids = new Set<number>(listingContext.listings?.map((l) => l.id));
-        newListings = newListings.filter((l) => {
-            if (ids.has(l.id)) {
-                return false;
-            } else {
-                ids.add(l.id);
-                return true;
-            }
-        });
-
         close();
-        setListings([...(listingContext.listings ?? []), ...newListings]);
+        addListings(parseResult.data);
 
-        const coordinates = listingContext.coordinates ?? [];
-        for (const listing of newListings) {
+        for (const listing of parseResult.data) {
             const coordinatesResult = await lookupGeocodeAddress(
                 listing.id,
                 `${listing.address.street}, ${listing.address.city}, ${listing.address.state}`
@@ -76,8 +55,7 @@ export const SourceInputPopup: FC<SourceInputPopupProps> = ({
                 continue;
             }
 
-            coordinates.push(coordinatesResult.data);
-            setCoordinates([...coordinates]);
+            addCoordinate(coordinatesResult.data);
         }
 
         setIsImporting(false);
