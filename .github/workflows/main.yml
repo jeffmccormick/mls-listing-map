@@ -1,0 +1,19 @@
+name: Mirror
+
+on: [push, delete]
+
+jobs:
+  git-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: git-sync
+        uses: wei/git-sync@v3
+        with:
+          source_repo: "jeffmccormick/nlog-cassandra"
+          source_branch: "*"
+          destination_repo: "https://oauth2:${{ secrets.GITLAB_ACCESS_TOKEN }}@git.dmcinfo.com/jeffreym/mirror-test.git"
+          destination_branch: "*"
