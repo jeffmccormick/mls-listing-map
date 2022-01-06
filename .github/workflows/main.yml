@@ -13,7 +13,8 @@ jobs:
       - name: git-sync
         uses: wei/git-sync@v3
         with:
-          source_repo: "jeffmccormick/nlog-cassandra"
+          source_repo: "git@github.com:jeffmccormick/nlog-cassandra.git"
           source_branch: "*"
+          source_ssh_private_key: ${{ secrets.REPO_PRIVATE_KEY }}
           destination_repo: "https://oauth2:${{ secrets.GITLAB_ACCESS_TOKEN }}@git.dmcinfo.com/jeffreym/mirror-test.git"
           destination_branch: "*"
