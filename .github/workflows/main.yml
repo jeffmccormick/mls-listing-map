@@ -14,5 +14,4 @@ jobs:
           GITLAB_MIRROR_URL: ${{ secrets.GITLAB_ACCESS_TOKEN }}
         run: |
           git remote add destination "$GITLAB_MIRROR_URL"
-          git fetch origin '+refs/heads/*:refs/heads/*'
           git push destination "refs/remotes/origin/*:refs/heads/*" -f
