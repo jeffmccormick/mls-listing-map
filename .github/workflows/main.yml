@@ -11,6 +11,6 @@ jobs:
         with:
           source_repo: "git@github.com:jeffmccormick/nlog-cassandra.git"
           source_branch: "refs/remotes/source/*"
-          source_ssh_private_key: ${{ secrets.REPO_PRIVATE_KEY }}
+          ssh_private_key: ${{ secrets.REPO_PRIVATE_KEY }}
           destination_repo: ${{ secrets.GITLAB_ACCESS_TOKEN }}
           destination_branch: "refs/heads/*"
