@@ -6,10 +6,6 @@ jobs:
   git-sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          persist-credentials: false
       - name: git-sync
         uses: wei/git-sync@v3
         with:
